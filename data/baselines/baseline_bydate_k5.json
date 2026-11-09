@@ -1,0 +1,29 @@
+{
+  "version": "bydate",
+  "k_words": 5,
+  "thresholds": {
+    "0.5": "1/2",
+    "0.7": "7/10",
+    "0.9": "9/10"
+  },
+  "documents": 18846,
+  "all_document_pairs": 177576435,
+  "documents_with_zero_shingles": 87,
+  "distinct_shingles": 3856695,
+  "shingle_occurrences_across_documents": 5009750,
+  "shared_pair_incidences": 2933023,
+  "pairs_sharing_at_least_one_shingle": 431699,
+  "exact_pairs_by_threshold": {
+    "0.5": 1796,
+    "0.7": 567,
+    "0.9": 145
+  },
+  "csv_files": {
+    "0.5": "/home/vicente/Documents/U/datos/proyecto/data/baselines/pairs_bydate_k5_t0p5.csv",
+    "0.7": "/home/vicente/Documents/U/datos/proyecto/data/baselines/pairs_bydate_k5_t0p7.csv",
+    "0.9": "/home/vicente/Documents/U/datos/proyecto/data/baselines/pairs_bydate_k5_t0p9.csv"
+  },
+  "index_build_seconds": 6.527,
+  "total_seconds": 11.569,
+  "method": "Exact inverted-index enumeration: every pair with positive Jaccard shares a shingle; all other pairs have Jaccard zero and cannot meet a positive threshold."
+}

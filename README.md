@@ -9,8 +9,10 @@ casi duplicados. El corpus seleccionado es 20 Newsgroups.
 - Carga de las versiones `bydate` y `original` de 20 Newsgroups.
 - Perfil de datos y detección descriptiva de copias exactas.
 - Normalización mínima, tokenización y generación de shingles de palabras.
+- Baseline exacto de Jaccard por umbral, con índice invertido de shingles y
+  validación contra fuerza bruta en un subconjunto.
 - Pruebas unitarias para la carga, normalización y shingles.
-- El baseline exacto, MinHash, SuperMinHash, FracMinHash y LSH están pendientes.
+- MinHash, SuperMinHash, FracMinHash y LSH están pendientes.
 
 ## Requisitos
 
@@ -31,6 +33,9 @@ python3 src/profile_data.py
 # Aplicar la limpieza actual y medir shingles de cinco palabras
 python3 src/profile_shingling.py --k 5
 
+# Crear pares ground truth exactos para ambas versiones y varios umbrales
+python3 src/baseline.py --version both --k 5 --thresholds 0.5 0.7 0.9
+
 # Ejecutar las pruebas
 python3 -m unittest discover -s tests -v
 ```
@@ -41,6 +46,9 @@ se incluyen en Git; así se evita duplicar en el repositorio los mensajes del
 corpus.
 
 Los perfiles generados se guardan en `data/profiles/`.
+El baseline escribe sus conteos y pares exactos (CSV) en `data/baselines/`.
+Solo se enumeran pares que comparten al menos un shingle; para umbrales
+positivos esto es exacto, porque un par sin intersección tiene Jaccard cero.
 
 ## Limpieza y shingles actuales
 
