@@ -1,0 +1,262 @@
+[
+  {
+    "version": "bydate",
+    "source_url": "https://ndownloader.figshare.com/files/5975967",
+    "k_words": 5,
+    "tokenizer": "Unicode alphanumeric runs; numbers retained; punctuation and underscores delimit tokens",
+    "normalization": "NFKC, casefold, collapse whitespace, remove recognizable initial email/news headers and signature after a standalone -- line; preserve quoted text; no stemming or stop-word removal",
+    "documents": 18846,
+    "categories": 20,
+    "total_tokens": 5209570,
+    "total_distinct_shingles_across_documents": 5009750,
+    "documents_shorter_than_k": 87,
+    "tokens_per_document": {
+      "min": 0,
+      "median": 150.0,
+      "mean": 276.43,
+      "p95": 743,
+      "max": 39977,
+      "zero_count": 55
+    },
+    "distinct_shingles_per_document": {
+      "min": 0,
+      "median": 145.0,
+      "mean": 265.83,
+      "p95": 733,
+      "max": 39969,
+      "zero_count": 87
+    },
+    "by_category": {
+      "alt.atheism": {
+        "documents": 799,
+        "mean_tokens": 325.01,
+        "mean_distinct_shingles": 317.83
+      },
+      "comp.graphics": {
+        "documents": 973,
+        "mean_tokens": 229.63,
+        "mean_distinct_shingles": 223.04
+      },
+      "comp.os.ms-windows.misc": {
+        "documents": 985,
+        "mean_tokens": 471.17,
+        "mean_distinct_shingles": 393.19
+      },
+      "comp.sys.ibm.pc.hardware": {
+        "documents": 982,
+        "mean_tokens": 175.64,
+        "mean_distinct_shingles": 170.29
+      },
+      "comp.sys.mac.hardware": {
+        "documents": 963,
+        "mean_tokens": 164.36,
+        "mean_distinct_shingles": 159.69
+      },
+      "comp.windows.x": {
+        "documents": 988,
+        "mean_tokens": 292.52,
+        "mean_distinct_shingles": 279.27
+      },
+      "misc.forsale": {
+        "documents": 975,
+        "mean_tokens": 127.57,
+        "mean_distinct_shingles": 120.97
+      },
+      "rec.autos": {
+        "documents": 990,
+        "mean_tokens": 200.88,
+        "mean_distinct_shingles": 196.1
+      },
+      "rec.motorcycles": {
+        "documents": 996,
+        "mean_tokens": 174.85,
+        "mean_distinct_shingles": 169.99
+      },
+      "rec.sport.baseball": {
+        "documents": 994,
+        "mean_tokens": 214.42,
+        "mean_distinct_shingles": 208.88
+      },
+      "rec.sport.hockey": {
+        "documents": 999,
+        "mean_tokens": 272.3,
+        "mean_distinct_shingles": 264.1
+      },
+      "sci.crypt": {
+        "documents": 991,
+        "mean_tokens": 306.75,
+        "mean_distinct_shingles": 298.93
+      },
+      "sci.electronics": {
+        "documents": 984,
+        "mean_tokens": 184.27,
+        "mean_distinct_shingles": 179.47
+      },
+      "sci.med": {
+        "documents": 990,
+        "mean_tokens": 277.93,
+        "mean_distinct_shingles": 271.57
+      },
+      "sci.space": {
+        "documents": 987,
+        "mean_tokens": 269.99,
+        "mean_distinct_shingles": 263.98
+      },
+      "soc.religion.christian": {
+        "documents": 997,
+        "mean_tokens": 372.16,
+        "mean_distinct_shingles": 365.57
+      },
+      "talk.politics.guns": {
+        "documents": 910,
+        "mean_tokens": 312.15,
+        "mean_distinct_shingles": 304.86
+      },
+      "talk.politics.mideast": {
+        "documents": 940,
+        "mean_tokens": 484.14,
+        "mean_distinct_shingles": 474.83
+      },
+      "talk.politics.misc": {
+        "documents": 775,
+        "mean_tokens": 396.4,
+        "mean_distinct_shingles": 388.28
+      },
+      "talk.religion.misc": {
+        "documents": 628,
+        "mean_tokens": 343.46,
+        "mean_distinct_shingles": 334.9
+      }
+    }
+  },
+  {
+    "version": "original",
+    "source_url": "https://people.csail.mit.edu/jrennie/20Newsgroups/20news-19997.tar.gz",
+    "k_words": 5,
+    "tokenizer": "Unicode alphanumeric runs; numbers retained; punctuation and underscores delimit tokens",
+    "normalization": "NFKC, casefold, collapse whitespace, remove recognizable initial email/news headers and signature after a standalone -- line; preserve quoted text; no stemming or stop-word removal",
+    "documents": 19997,
+    "categories": 20,
+    "total_tokens": 5516187,
+    "total_distinct_shingles_across_documents": 5308869,
+    "documents_shorter_than_k": 96,
+    "tokens_per_document": {
+      "min": 0,
+      "median": 152,
+      "mean": 275.85,
+      "p95": 744,
+      "max": 39977,
+      "zero_count": 64
+    },
+    "distinct_shingles_per_document": {
+      "min": 0,
+      "median": 147,
+      "mean": 265.48,
+      "p95": 735,
+      "max": 39969,
+      "zero_count": 96
+    },
+    "by_category": {
+      "alt.atheism": {
+        "documents": 1000,
+        "mean_tokens": 312.63,
+        "mean_distinct_shingles": 305.42
+      },
+      "comp.graphics": {
+        "documents": 1000,
+        "mean_tokens": 228.79,
+        "mean_distinct_shingles": 222.25
+      },
+      "comp.os.ms-windows.misc": {
+        "documents": 1000,
+        "mean_tokens": 466.21,
+        "mean_distinct_shingles": 389.34
+      },
+      "comp.sys.ibm.pc.hardware": {
+        "documents": 1000,
+        "mean_tokens": 175.92,
+        "mean_distinct_shingles": 170.57
+      },
+      "comp.sys.mac.hardware": {
+        "documents": 1000,
+        "mean_tokens": 165.06,
+        "mean_distinct_shingles": 160.4
+      },
+      "comp.windows.x": {
+        "documents": 1000,
+        "mean_tokens": 291.76,
+        "mean_distinct_shingles": 278.58
+      },
+      "misc.forsale": {
+        "documents": 1000,
+        "mean_tokens": 127.31,
+        "mean_distinct_shingles": 120.78
+      },
+      "rec.autos": {
+        "documents": 1000,
+        "mean_tokens": 199.66,
+        "mean_distinct_shingles": 194.88
+      },
+      "rec.motorcycles": {
+        "documents": 1000,
+        "mean_tokens": 174.33,
+        "mean_distinct_shingles": 169.47
+      },
+      "rec.sport.baseball": {
+        "documents": 1000,
+        "mean_tokens": 214.03,
+        "mean_distinct_shingles": 208.49
+      },
+      "rec.sport.hockey": {
+        "documents": 1000,
+        "mean_tokens": 272.07,
+        "mean_distinct_shingles": 263.87
+      },
+      "sci.crypt": {
+        "documents": 1000,
+        "mean_tokens": 305.86,
+        "mean_distinct_shingles": 298.04
+      },
+      "sci.electronics": {
+        "documents": 1000,
+        "mean_tokens": 183.91,
+        "mean_distinct_shingles": 179.13
+      },
+      "sci.med": {
+        "documents": 1000,
+        "mean_tokens": 278.04,
+        "mean_distinct_shingles": 271.7
+      },
+      "sci.space": {
+        "documents": 1000,
+        "mean_tokens": 271.0,
+        "mean_distinct_shingles": 265.0
+      },
+      "soc.religion.christian": {
+        "documents": 997,
+        "mean_tokens": 372.16,
+        "mean_distinct_shingles": 365.57
+      },
+      "talk.politics.guns": {
+        "documents": 1000,
+        "mean_tokens": 307.88,
+        "mean_distinct_shingles": 300.69
+      },
+      "talk.politics.mideast": {
+        "documents": 1000,
+        "mean_tokens": 481.96,
+        "mean_distinct_shingles": 472.59
+      },
+      "talk.politics.misc": {
+        "documents": 1000,
+        "mean_tokens": 373.24,
+        "mean_distinct_shingles": 365.5
+      },
+      "talk.religion.misc": {
+        "documents": 1000,
+        "mean_tokens": 315.48,
+        "mean_distinct_shingles": 307.69
+      }
+    }
+  }
+]

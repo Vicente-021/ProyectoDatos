@@ -1,0 +1,139 @@
+[
+  {
+    "version": "bydate",
+    "source_url": "https://ndownloader.figshare.com/files/5975967",
+    "documents": 18846,
+    "categories": 20,
+    "documents_by_split": {
+      "test": 7532,
+      "train": 11314
+    },
+    "documents_by_category": {
+      "alt.atheism": 799,
+      "comp.graphics": 973,
+      "comp.os.ms-windows.misc": 985,
+      "comp.sys.ibm.pc.hardware": 982,
+      "comp.sys.mac.hardware": 963,
+      "comp.windows.x": 988,
+      "misc.forsale": 975,
+      "rec.autos": 990,
+      "rec.motorcycles": 996,
+      "rec.sport.baseball": 994,
+      "rec.sport.hockey": 999,
+      "sci.crypt": 991,
+      "sci.electronics": 984,
+      "sci.med": 990,
+      "sci.space": 987,
+      "soc.religion.christian": 997,
+      "talk.politics.guns": 910,
+      "talk.politics.mideast": 940,
+      "talk.politics.misc": 775,
+      "talk.religion.misc": 628
+    },
+    "empty_or_whitespace_documents": 0,
+    "characters": {
+      "min": 115,
+      "median": 1175.0,
+      "mean": 1902.53,
+      "p95": 4699,
+      "max": 160616
+    },
+    "whitespace_tokens": {
+      "min_nonempty": 12,
+      "median": 175.0,
+      "mean": 283.66,
+      "p95": 756,
+      "max": 11821,
+      "empty_documents": 0
+    },
+    "exact_raw_text_duplicates": {
+      "duplicate_groups": 0,
+      "duplicate_documents_beyond_first": 0,
+      "duplicate_pairs": 0,
+      "groups_spanning_categories": 0,
+      "cross_category_duplicate_pairs": 0
+    },
+    "normalized_full_text_duplicates": {
+      "duplicate_groups": 0,
+      "duplicate_documents_beyond_first": 0,
+      "duplicate_pairs": 0,
+      "groups_spanning_categories": 0,
+      "cross_category_duplicate_pairs": 0
+    },
+    "normalized_body_duplicates": {
+      "duplicate_groups": 61,
+      "duplicate_documents_beyond_first": 65,
+      "duplicate_pairs": 70,
+      "groups_spanning_categories": 11,
+      "cross_category_duplicate_pairs": 12
+    }
+  },
+  {
+    "version": "original",
+    "source_url": "https://people.csail.mit.edu/jrennie/20Newsgroups/20news-19997.tar.gz",
+    "documents": 19997,
+    "categories": 20,
+    "documents_by_split": {
+      "all": 19997
+    },
+    "documents_by_category": {
+      "alt.atheism": 1000,
+      "comp.graphics": 1000,
+      "comp.os.ms-windows.misc": 1000,
+      "comp.sys.ibm.pc.hardware": 1000,
+      "comp.sys.mac.hardware": 1000,
+      "comp.windows.x": 1000,
+      "misc.forsale": 1000,
+      "rec.autos": 1000,
+      "rec.motorcycles": 1000,
+      "rec.sport.baseball": 1000,
+      "rec.sport.hockey": 1000,
+      "sci.crypt": 1000,
+      "sci.electronics": 1000,
+      "sci.med": 1000,
+      "sci.space": 1000,
+      "soc.religion.christian": 997,
+      "talk.politics.guns": 1000,
+      "talk.politics.mideast": 1000,
+      "talk.politics.misc": 1000,
+      "talk.religion.misc": 1000
+    },
+    "empty_or_whitespace_documents": 0,
+    "characters": {
+      "min": 345,
+      "median": 1600,
+      "mean": 2306.99,
+      "p95": 5158,
+      "max": 161040
+    },
+    "whitespace_tokens": {
+      "min_nonempty": 21,
+      "median": 195,
+      "mean": 302.38,
+      "p95": 779,
+      "max": 11839,
+      "empty_documents": 0
+    },
+    "exact_raw_text_duplicates": {
+      "duplicate_groups": 525,
+      "duplicate_documents_beyond_first": 531,
+      "duplicate_pairs": 538,
+      "groups_spanning_categories": 520,
+      "cross_category_duplicate_pairs": 533
+    },
+    "normalized_full_text_duplicates": {
+      "duplicate_groups": 525,
+      "duplicate_documents_beyond_first": 531,
+      "duplicate_pairs": 538,
+      "groups_spanning_categories": 520,
+      "cross_category_duplicate_pairs": 533
+    },
+    "normalized_body_duplicates": {
+      "duplicate_groups": 617,
+      "duplicate_documents_beyond_first": 655,
+      "duplicate_pairs": 735,
+      "groups_spanning_categories": 534,
+      "cross_category_duplicate_pairs": 560
+    }
+  }
+]

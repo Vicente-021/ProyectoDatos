@@ -1,0 +1,10 @@
+Abstract:
+    Se presenta un algoritmo nuevo para calcular las firmas de hash para ser usadas en calculos de similitud de            Jaccard, el nuevo algoritmo corre mejor en tiempo y memoria que minHash y además permite estimaciones mas            precisas.
+    
+1. Intro:
+    La similitud de Jaccard sirve para comparar similitud entre 2 sets y para grandes volumenes de datos es muy            caro, existen varios algoritmos para calcularla que se basan en la idea de que este calculo se puede hacer           solo con la firma del set.
+    
+1.1 - 1.4 "linea de tiempo"
+    - Opcion base: MinHash de siempre con la funcion binaria 0 y 1 con complejidad O(n*m)
+    - La primera mejora intentó separando la entrada D en m subconjuntos disjuntos aleatorios reduciendo
+            

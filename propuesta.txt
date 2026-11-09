@@ -1,0 +1,173 @@
+PROPUESTA DE PROYECTO
+
+Titulo: Deteccion de documentos casi duplicados a gran escala mediante MinHash,
+SuperMinHash y FracMinHash con Locality-Sensitive Hashing
+
+Alumno: (tu nombre)
+Curso: Analisis de Grandes Volumenes de Datos
+Fecha: (fecha)
+
+
+1. PROBLEMA
+
+Dada una coleccion de documentos, se desea encontrar todos los pares con alta
+similitud de contenido (near-duplicates). La solucion directa compara todos los
+pares, con complejidad O(n^2) en tiempo y memoria, lo que la hace inviable a
+gran escala. El objetivo es resolver el mismo problema con complejidad
+sub-cuadratica, a costo de una fraccion controlada de falsos negativos y
+positivos.
+
+Formalizacion:
+
+Sea una coleccion de documentos D = {d_1, ..., d_n}, representado cada d_i como
+su conjunto de k-shingles S_i (subcadenas de longitud k extraidas del texto).
+
+La similitud (resemblance / Jaccard) entre dos documentos se define como:
+
+    r(d_i, d_j) = |S_i ∩ S_j| / |S_i ∪ S_j|
+
+El containment (para subsumcion, por ejemplo boilerplate o plantillas) se define
+como:
+
+    c(d_i, d_j) = |S_i ∩ S_j| / |S_i|
+
+El problema consiste, dado un umbral t en (0, 1), en encontrar el conjunto:
+
+    P_t = { (i, j) : i < j, r(d_i, d_j) >= t }
+
+La solucion ingenua requiere O(n^2) comparaciones de conjuntos y O(n^2) de
+memoria. El objetivo es obtener una solucion sub-cuadratica (idealmente
+cuasi-lineal en el total de tokens) mediante firmas MinHash / SuperMinHash
+(para resemblance) y FracMinHash (para containment) combinadas con un indice
+LSH. Ademas se busca caracterizar experimentalmente el compromiso entre
+precision y tiempo de cada esquema de firma.
+
+
+2. MOTIVACION
+
+La deduplicacion casi-exacta es un paso fundamental en la ingesta de datos web
+(Common Crawl), la limpieza de corpus, la eliminacion de boilerplate y
+plantillas, y el control de contaminacion de datasets de entrenamiento. La
+tecnica estandar en la industria (MinHash + LSH) es un caso de estudio canonico
+de algoritmos probabilisticos para grandes volumenes de datos. Versiones mas
+recientes (SuperMinHash, FracMinHash) prometen firmas mas precisas y/o mas
+rapidas, por lo que resulta relevante compararlas empiricamente en un mismo
+pipeline.
+
+
+3. OBJETIVO
+
+Objetivo general:
+Implementar y evaluar empiricamente un pipeline de deteccion de documentos casi
+duplicados basado en firmas (MinHash, SuperMinHash, FracMinHash) + LSH, y
+contrastarlo contra la solucion de fuerza bruta O(n^2), cuantificando la
+ganancia en eficiencia y la perdida de calidad, asi como las diferencias
+experimentales entre los distintos esquemas de firma.
+
+Objetivos especificos:
+1. Construir un baseline exacto como ground truth.
+2. Implementar firmas MinHash, SuperMinHash y FracMinHash con una interfaz
+   comun, y el indice LSH (banding).
+3. Comparar MinHash vs SuperMinHash en precision (varianza del estimador de
+   Jaccard) y tiempo de construccion de firma.
+4. Calibrar parametros (k, m, b, r, t) y analizar la curva-S, incluyendo el
+   efecto de la dependencia de las firmas de SuperMinHash sobre el banding.
+5. Medir calidad (Precision/Recall/F1), eficiencia (speedup) y escalabilidad.
+6. Extender a containment (Broder, 1997) y comparar el estimador basado en
+   FracMinHash con la formula derivada del Jaccard estimado.
+
+
+4. ANTECEDENTE TEORICO (PAPERS DE REFERENCIA)
+
+- Broder, A. Z. (1997). On the resemblance and containment of documents. Define
+  las medidas de resemblance (Jaccard) y containment, e introduce la tecnica de
+  min-wise hashing que fundamenta MinHash.
+- Indyk, P., Motwani, R. (1998). Approximate nearest neighbors: towards removing
+  the curse of dimensionality. Aporta el indice LSH para la busqueda
+  sub-lineal de candidatos.
+- Ertl, O. (2017). SuperMinHash - A New Minwise Hashing Algorithm for Jaccard
+  Similarity Estimation (arXiv:1706.05698). Mejora de MinHash con mejor runtime
+  y mayor precision.
+
+Marco teorico:
+- Shingling: tokenizacion y normalizacion (case-folding, limpieza de HTML),
+  generando k-shingles (tipico k = 5 palabras o k = 9 caracteres).
+- MinHash: para una permutacion aleatoria pi, h_pi(S) = min_{s en S} pi(s). La
+  firma sig(S) = (h_pi_1(S), ..., h_pi_m(S)) cumple
+  Pr[h_pi_a(S_i) = h_pi_a(S_j)] = r(d_i, d_j), de modo que es un estimador
+  insesgado con varianza J(1-J)/m. Complejidad O(n*m).
+- SuperMinHash (Ertl 2017): firma h_j(D) = min_{d en D} (r_j(d) + pi_j(d)) con
+  valores en [0, m), calculada mediante Fisher-Yates por elemento y un atajo de
+  tipo coupon collector. Propiedades:
+    * Estimador insesgado con varianza (J(1-J)/m) * alpha(m, u), donde
+      u = |A ∪ B| y alpha en [0, 1) depende solo de m y u (no de J); si u < m la
+      varianza es aproximadamente la mitad que la de MinHash.
+    * Runtime O(n + m log^2 m) para elementos distintos, con costo amortizado
+      tendiente a 1 iteracion interna por elemento; nunca peor que MinHash.
+    * Requiere una sola pasada (apto para streaming).
+    * Nota: las entradas de la firma son dependientes (de ahi la mejora de
+      precision), a diferencia de MinHash.
+- FracMinHash (scaled MinHash): se conservan solo los hashes bajo un umbral
+  (submuestreo determinista). Permite estimar containment e inclusion, admite la
+  union de sketches y es especialmente adecuado para el caso de subsumcion.
+- LSH (banding): se dividen las m filas en b bandas de r filas (m = b*r). Un par
+  es candidato si coincide en al menos una banda, con probabilidad
+  P_cand(s) = 1 - (1 - s^r)^b. La curva-S permite elegir (b, r) para el umbral
+  t deseado, controlando falsos negativos y positivos. El analisis clasico
+  asume independencia entre entradas de la firma.
+- Complejidad: firmas en O(n*m) para MinHash y O(n + m log^2 m) para
+  SuperMinHash; candidatos esperados mucho menores que n^2; la verificacion
+  exacta se aplica solo sobre los candidatos.
+
+
+5. METODO
+
+- Representacion: documentos como conjuntos de k-shingles.
+- Capa de firmas pluggable, con una interfaz comun y tres implementaciones:
+    * MinHash: m hashes independientes (referencia).
+    * SuperMinHash (Ertl 2017): firma principal para resemblance.
+    * FracMinHash: firma orientada a containment/inclusion.
+- LSH: b bandas de r filas; probabilidad de candidato 1 - (1 - s^r)^b.
+- Esquema de dos etapas: generacion de candidatos (LSH) y luego verificacion
+  exacta (Jaccard / containment).
+- Containment: se comparan dos estimadores:
+    (a) FracMinHash, y
+    (b) derivado del Jaccard estimado mas cardinalidades exactas. Con
+        r_hat = Jaccard estimado y |A|, |B| exactos:
+            |A ∩ B|_hat = r_hat * (|A| + |B|) / (1 + r_hat)
+            c_hat(A, B)  = |A ∩ B|_hat / |A|
+- Nota sobre LSH: dado que las entradas de la firma de SuperMinHash son
+  dependientes, se medira empiricamente la desviacion respecto a la curva-S
+  teorica y se usara MinHash como referencia de candidatos.
+
+
+6. DATOS
+
+20 Newsgroups (~18.800 documentos, via scikit-learn). Corpus real con duplicados
+y mensajes cruzados, con ground truth exacto calculable, lo que permite medir
+recall con precision.
+
+Preprocesamiento: limpieza de HTML, normalizacion Unicode, case-folding,
+tokenizacion y generacion de shingles, con manejo de near-duplicates por
+boilerplate.
+
+
+7. EVALUACION
+
+- Comparacion de esquemas de firma (MinHash vs SuperMinHash):
+    * Precision: MSE / varianza del estimador de Jaccard frente al Jaccard
+      exacto, barriendo el tamano de firma m y los tamanos de conjunto
+      (especialmente |D| < m). Verificar el factor teorico alpha(m, u).
+    * Tiempo: costo de construccion de firma en funcion de m y n; verificar el
+      escalado O(n + m log^2 m) y el costo amortizado de SuperMinHash.
+- Containment: comparar FracMinHash contra la formula derivada del Jaccard
+  estimado, usando el containment exacto como referencia.
+- Calidad end-to-end: Precision, Recall y F1 respecto al baseline exacto
+  (Jaccard y containment por separado), para cada esquema de firma.
+- Eficiencia: tiempo total, speedup respecto al baseline y tasa de reduccion de
+  candidatos (pares candidatos / n^2).
+- Escalabilidad: tiempo y memoria en funcion de n creciente (verificar el
+  comportamiento sub-cuadratico).
+- Robustez: sensibilidad al umbral t, efecto del tamano de firma m en la
+  varianza del estimador, y desviacion de la curva-S empirica respecto a la
+  teorica cuando se usa banding sobre firmas dependientes (SuperMinHash).

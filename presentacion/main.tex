@@ -1,0 +1,292 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usetheme{Madrid}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+
+\title[Dedup a gran escala]{Detección de documentos casi duplicados a gran escala}
+\subtitle{MinHash, SuperMinHash y FracMinHash con LSH}
+\author{Vicente Hernández \and Vicente Wiederhold}
+\institute{Análisis de Grandes Volúmenes de Datos}
+\date{\today}
+
+\setbeamertemplate{footline}{%
+  \leavevmode%
+  \hbox{%
+    \begin{beamercolorbox}[wd=.6\paperwidth,ht=2.5ex,dp=1ex,leftskip=1em]{author in head/foot}%
+      \usebeamerfont{author in head/foot}Análisis de Grandes Volúmenes de Datos%
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.4\paperwidth,ht=2.5ex,dp=1ex,rightskip=1em,right]{date in head/foot}%
+      \usebeamerfont{date in head/foot}\insertshortdate{}\hspace{2em}\insertframenumber/\inserttotalframenumber%
+    \end{beamercolorbox}%
+  }%
+  \vskip0pt%
+}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{El problema}
+  \begin{itemize}
+    \item Las colecciones masivas de documentos contienen
+          \textbf{copias casi idénticas} (noticias sindicadas, plantillas,
+          \emph{boilerplate}, contenido re-crawleado).
+    \item \textbf{Objetivo:} encontrar todos los pares de documentos con alto
+          contenido compartido.
+    \item La comparación directa requiere $\mathcal{O}(n^2)$ comparaciones
+          $\Rightarrow$ inviable a escala.
+  \end{itemize}
+  \vfill
+  \textbf{Ejemplo: la misma noticia en dos medios}
+  \vspace{0.3em}
+  \begin{description}
+    \item[Medio A:] ``El presidente anunció un nuevo plan económico en la cumbre de Bruselas.''
+    \item[Medio B:] ``El presidente presentó un nuevo plan económico en la cumbre de Bruselas.''
+  \end{description}
+  \vspace{0.2em}
+  Mismo hecho, texto casi idéntico $\Rightarrow$ \emph{casi duplicados}.
+\end{frame}
+
+\begin{frame}{¿Por qué es relevante?}
+  \small
+  \begin{itemize}
+    \item \textbf{Entrenamiento de LLMs:} los corpus web se deduplican
+          casi-exactamente (Common Crawl $\to$ C4, The Pile).
+          \textit{Lee et al., ACL 2022}:
+          \begin{itemize}
+            \item near-duplicados del \textbf{3{,}04\%} (C4) al \textbf{13{,}63\%} (RealNews).
+            \item datasets hasta \textbf{19\%} más pequeños $\Rightarrow$ menos cómputo.
+            \item reduce la emisión memorizada \textbf{10$\times$} y el solapamiento
+                  train--test (\textbf{>4\%} del set de validación).
+            \item una sola oración de 61 palabras repetida \textbf{>60\,000 veces} en C4.
+          \end{itemize}
+    \item \textbf{Web / crawlers:} $\approx$40\% de las páginas cambia en una semana
+          (Cho \& Garcia-Molina, VLDB 2000); a escala de Common Crawl (petabytes),
+          deduplicar ahorra almacenamiento, cómputo y energía.
+    \item \textbf{Otros dominios:} plagio y derecho (\emph{containment}),
+          spam/phishing e indexación en motores de búsqueda.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{¿Qué es un \emph{shingle}?}
+  \begin{itemize}
+    \item Un \emph{shingle} es un fragmento contiguo de $k$ tokens
+          (o de $k$ caracteres): es similar a una \textbf{ventana deslizante}
+          de tamaño $k$ que avanza de a un token.
+    \item Un documento se convierte en el \textbf{conjunto} de todos sus
+          shingles $\Rightarrow$ se compara \emph{contenido}, no texto literal.
+  \end{itemize}
+  \vfill
+  \textbf{Ejemplo} con ``el presidente anunció un plan económico'' y $k=3$:
+  \[
+    \begin{aligned}
+      S = \{ & \text{``el presidente anunció''},\ \text{``presidente anunció un''},\\
+             & \text{``anunció un plan''},\ \text{``un plan económico''} \}
+    \end{aligned}
+  \]
+  \vfill
+  \textbf{Ventaja:} robusto a cambios de puntuación, mayúsculas y espacios.
+\end{frame}
+
+\begin{frame}{Formalización}
+  Cada documento $d_i$ se representa por su conjunto de $k$-shingles $S_i$.
+  \vfill
+  \textbf{Resemblance (Jaccard):}
+  \[
+    r(d_i,d_j)=\frac{|S_i\cap S_j|}{|S_i\cup S_j|}
+  \]
+  \textbf{Containment (inclusión):}
+  \[
+    c(d_i,d_j)=\frac{|S_i\cap S_j|}{|S_i|}
+  \]
+  \vfill
+  Dado un umbral $t\in(0,1)$, encontrar
+  \[
+    \mathcal{P}_t=\{(i,j): i<j,\ r(d_i,d_j)\ge t\}
+  \]
+\end{frame}
+
+\begin{frame}{¿Por qué es un desafío?}
+  \begin{itemize}
+    \item \textbf{Costo cuadrático:} $\tfrac{n(n-1)}{2}$ comparaciones;
+          con $n=18\,800$ son $\approx 177$ millones de pares.
+    \item \textbf{Memoria:} $O(n^2)$.
+    \item \textbf{Representación:} el texto exige \emph{shingling} sensible a
+          longitud y ruido.
+          \begin{itemize}
+            \item longitud: distinguir \emph{resemblance} (similitud)
+                  de \emph{containment} (inclusión).
+          \end{itemize}
+    \item \textbf{Escala real:} la web reúne cientos de miles de millones de
+          páginas (Common Crawl).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Solución existente}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Comparación de todos los pares}
+      \begin{itemize}
+        \item Jaccard \textbf{exacto} de cada par.
+        \item Correcta $\Rightarrow$ \emph{ground truth}.
+        \item $O(n^2)$ en tiempo y memoria.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \textbf{MinHash + LSH}
+      \begin{itemize}
+        \item Firmas cortas + índice de candidatos.
+        \item Sub-cuadrática, \textbf{aproximada}.
+        \item Estándar industrial (C4, The Pile).
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \vfill
+  \centering
+  Usamos la primera como \textbf{baseline} y la segunda como \textbf{estado del arte}.\\[0.6em]
+  {\footnotesize (Broder, 1997; Indyk \& Motwani, 1998)}
+\end{frame}
+
+\begin{frame}{Idea de solución propuesta}
+  \centering
+  \begin{tikzpicture}[
+      node distance=4mm,
+      box/.style={draw, rounded corners, align=center, font=\scriptsize,
+                  inner sep=4pt, minimum height=6.5mm, text width=5.2cm},
+      >=Stealth
+    ]
+    \node[box, fill=blue!10] (docs) {Documentos crudos};
+    \node[box, fill=blue!10, below=of docs] (clean) {Limpieza y normalización};
+    \node[box, fill=blue!10, below=of clean] (shing) {$k$-shingles (conjuntos)};
+    \node[box, fill=green!15, below=of shing] (firma)
+        {Firma: MinHash / SuperMinHash / FracMinHash};
+    \node[box, fill=orange!20, below=of firma] (lsh) {LSH \emph{banding}};
+    \node[box, fill=red!15, below=of lsh] (verif) {Verificación exacta};
+    \draw[->] (docs) -- (clean);
+    \draw[->] (clean) -- (shing);
+    \draw[->] (shing) -- (firma);
+    \draw[->] (firma) -- (lsh);
+    \draw[->] (lsh) -- (verif);
+  \end{tikzpicture}
+  \vfill
+  \begin{itemize}
+    \item \textbf{Dos etapas:} firmas (reducen dimensiones) y LSH (reducen pares candidatos).
+    \item Comparamos \textbf{tres esquemas de firma}; verificación \textbf{exacta} solo sobre candidatos.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{¿Por qué es sub-cuadrático? Complejidad}
+  \small
+  Notación: $n$ documentos, $T$ tokens totales, $m$ tamaño de firma,
+  $b$ bandas, $C$ pares candidatos.
+  \vspace{0.6em}
+
+  \begin{center}
+  \begin{tabular}{lcc}
+    \toprule
+     & \textbf{Tiempo} & \textbf{Memoria} \\
+    \midrule
+    Baseline (todos los pares) & $\Theta(n^2)$ & $\Theta(n^2)$ \\
+    \textbf{Propuesta} (firmas + LSH) & $O(T + nm + nb + C\bar{s})$ & $O(nm)$ \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \vspace{0.4em}
+
+  \begin{itemize}
+    \item \textbf{Memoria:} lineal en $n$ ($O(nm)$) frente a $O(n^2)$.
+    \item \textbf{Tiempo:} sub-cuadrático si $C \ll \binom{n}{2}$
+          (LSH solo evalúa candidatos).
+    \item \textbf{Salvedad:} \emph{output-sensitive} --- si hay $\Theta(n^2)$
+          pares reales, emitirlos ya es cuadrático; y LSH es aproximada
+          (falsos negativos $\Rightarrow$ se mide \emph{recall}).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Datos}
+  \begin{itemize}
+    \item \textbf{20 Newsgroups} ($\approx 18\,800$ documentos, 20 categorías):
+          corpus real con duplicados y mensajes cruzados.
+    \item Ground truth \textbf{exacto} calculable $\Rightarrow$ permite medir \emph{recall}.
+    \item Preprocesamiento: normalizar, quitar cabeceras/firmas y generar shingles.
+  \end{itemize}
+  \vfill
+  \textbf{Repositorios:}
+  \begin{itemize}
+    \item \texttt{http://qwone.com/\textasciitilde jason/20Newsgroups/}
+    \item \texttt{https://scikit-learn.org/stable/datasets/real\_world.html}
+  \end{itemize}
+  \vfill
+  \footnotesize (Escala web real, \emph{trabajo futuro}: Common Crawl ---
+  \texttt{https://commoncrawl.org/})
+\end{frame}
+
+\begin{frame}{Paper a presentar}
+  \begin{block}{SuperMinHash --- A New Minwise Hashing Algorithm for Jaccard Similarity Estimation}
+    \begin{itemize}
+      \item \textbf{Autor:} Otmar Ertl
+      \item \textbf{Venue:} arXiv preprint \texttt{arXiv:1706.05698} (cs.DS)
+      \item \textbf{Año:} 2017
+    \end{itemize}
+  \end{block}
+  \begin{itemize}
+    \item Mejora sobre MinHash: \textbf{más rápido} ($O(n+m\log^2 m)$) y
+          \textbf{más preciso} (varianza $\tfrac{J(1-J)}{m}\alpha(m,u)$).
+    \item Base de nuestra firma principal (comparada con MinHash y FracMinHash).
+  \end{itemize}
+  \vfill
+  \footnotesize Trabajo relacionado: ProbMinHash (O. Ertl, \emph{IEEE TKDE}, 2020).
+\end{frame}
+
+\begin{frame}{Planificación}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \textbf{Avance}
+      \begin{itemize}
+        \item Datos, shingling y \textbf{baseline exacto}.
+        \item MinHash + SuperMinHash (interfaz común).
+        \item Validación del estimador de Jaccard.
+        \item Comparación preliminar MinHash vs SuperMinHash.
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \textbf{Entrega final}
+      \begin{itemize}
+        \item LSH \emph{banding} + calibración de la curva-S.
+        \item FracMinHash y evaluación de \emph{containment}.
+        \item Experimentos end-to-end (P/R/F1, speedup).
+        \item Escalabilidad y análisis crítico.
+        \item Informe final + repositorio GitHub.
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{Referencias}
+  \footnotesize
+  \begin{thebibliography}{9}
+    \bibitem{broder} A.~Z. Broder. \emph{On the Resemblance and Containment of
+      Documents.} Compression and Complexity of Sequences (SEQUENCES), 1997.
+    \bibitem{indyk} P.~Indyk, R.~Motwani. \emph{Approximate Nearest Neighbors:
+      Towards Removing the Curse of Dimensionality.} STOC, 1998.
+    \bibitem{ertl2017} O.~Ertl. \emph{SuperMinHash --- A New Minwise Hashing
+      Algorithm for Jaccard Similarity Estimation.} arXiv:1706.05698, 2017.
+    \bibitem{ertl2020} O.~Ertl. \emph{ProbMinHash --- A Class of
+      Locality-Sensitive Hash Algorithms for the (Probability) Jaccard
+      Similarity.} IEEE TKDE, 2020.
+    \bibitem{cho} J.~Cho, H.~Garcia-Molina. \emph{The Evolution of the Web and
+      Implications for an Incremental Crawler.} VLDB, 2000.
+    \bibitem{lee} K.~Lee et al. \emph{Deduplicating Training Data Makes Language
+      Models Better.} ACL, 2022.
+  \end{thebibliography}
+\end{frame}
+
+\end{document}
